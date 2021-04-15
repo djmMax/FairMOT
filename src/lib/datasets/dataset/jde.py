@@ -438,6 +438,8 @@ class JointDataset(LoadImagesAndLabels):  # for training
         ids = np.zeros((self.max_objs, ), dtype=np.int64)
         bbox_xys = np.zeros((self.max_objs, 4), dtype=np.float32)
 
+        # print('self.max_objs', self.max_objs)
+        # print('num_objs', num_objs)
         draw_gaussian = draw_msra_gaussian if self.opt.mse_loss else draw_umich_gaussian
         for k in range(num_objs):
             label = labels[k]
@@ -470,16 +472,21 @@ class JointDataset(LoadImagesAndLabels):  # for training
                     [bbox[0], bbox[1]], dtype=np.float32)
                 ct_int = ct.astype(np.int32)
                 draw_gaussian(hm[cls_id], ct_int, radius)
-                if self.opt.ltrb:
-                    wh[k] = ct[0] - bbox_amodal[0], ct[1] - bbox_amodal[1], \
-                            bbox_amodal[2] - ct[0], bbox_amodal[3] - ct[1]
-                else:
-                    wh[k] = 1. * w, 1. * h
-                ind[k] = ct_int[1] * output_w + ct_int[0]
-                reg[k] = ct - ct_int
-                reg_mask[k] = 1
-                ids[k] = label[1]
-                bbox_xys[k] = bbox_xy
+                try:
+                    if self.opt.ltrb:
+                        # print('k',k)
+                        wh[k] = ct[0] - bbox_amodal[0], ct[1] - bbox_amodal[1], \
+                                bbox_amodal[2] - ct[0], bbox_amodal[3] - ct[1]
+                    else:
+                        wh[k] = 1. * w, 1. * h
+                    ind[k] = ct_int[1] * output_w + ct_int[0]
+                    reg[k] = ct - ct_int
+                    reg_mask[k] = 1
+                    ids[k] = label[1]
+                    bbox_xys[k] = bbox_xy
+                except Exception as e:
+                    print(e)
+                    continue
 
         ret = {'input': imgs, 'hm': hm, 'reg_mask': reg_mask, 'ind': ind, 'wh': wh, 'reg': reg, 'ids': ids, 'bbox': bbox_xys}
         return ret

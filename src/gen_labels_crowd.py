@@ -3,7 +3,7 @@ import os
 import cv2
 import json
 import numpy as np
-
+import tqdm
 
 def mkdirs(d):
     if not osp.exists(d):
@@ -24,8 +24,8 @@ def gen_labels_crowd(data_root, label_root, ann_root):
     anns_data = load_func(ann_root)
 
     tid_curr = 0
-    for i, ann_data in enumerate(anns_data):
-        print(i)
+    for i, ann_data in enumerate(tqdm.tqdm(anns_data)):
+        # print(i)
         image_name = '{}.jpg'.format(ann_data['ID'])
         img_path = os.path.join(data_root, image_name)
         anns = ann_data['gtboxes']
